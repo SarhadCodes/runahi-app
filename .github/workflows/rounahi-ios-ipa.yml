@@ -1,4 +1,4 @@
-name: "رووناهى — iOS IPA (unsigned)"
+name: "رووناهى — iOS IPA ✓ ready"
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-rounahi-ios:
-    name: "Build رووناهى iOS IPA"
+    name: "Build رووناهى iOS IPA ✓"
     runs-on: macos-latest
     timeout-minutes: 90
     permissions:
@@ -28,6 +28,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.47.5"
           channel: stable
           cache: true
 
@@ -133,6 +134,7 @@ jobs:
             - Bundle ID: `com.rounahi.rounahi`
             - Version: `1.0.0+2`
             - File: `Rounahi-iOS-1.0.0+2-unsigned.ipa`
+            - Flutter: `3.47.5` + `pdfrx` 2.6.x (fixes CI null-safety build break)
             - Built with: `xcodebuild` unsigned (`CODE_SIGNING_ALLOWED=NO`) after `flutter build ios --config-only --no-codesign`
 
             Install only via sideload tools that accept unsigned packages.

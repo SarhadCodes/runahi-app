@@ -62,7 +62,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen>
     _bookmarks = ref.read(bookBookmarkServiceProvider).forBook(book.id);
     await ref.read(pageSoundServiceProvider).warmUp();
     try {
-      await pdfrxFlutterInitialize(dismissPdfiumWasmWarnings: true);
+      await pdfrxFlutterInitialize();
       final doc = await _openPdf(book.pdfUrl);
       if (!mounted) {
         await doc.dispose();

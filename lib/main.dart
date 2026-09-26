@@ -21,7 +21,7 @@ import 'services/widget_sync_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await pdfrxFlutterInitialize(dismissPdfiumWasmWarnings: true);
+  await pdfrxFlutterInitialize();
   if (!kIsWeb) {
     try {
       await JustAudioBackground.init(

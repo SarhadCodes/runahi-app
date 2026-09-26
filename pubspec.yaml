@@ -4,7 +4,7 @@ publish_to: "none"
 version: 1.0.0+2
 
 environment:
-  sdk: ^3.10.3
+  sdk: ^3.13.0
 
 dependencies:
   flutter:
@@ -41,7 +41,7 @@ dependencies:
   supabase_flutter: ^2.9.1
   youtube_player_iframe: ^6.0.2
   better_player_plus: 1.1.5
-  pdfrx: ^2.2.24
+  pdfrx: ^2.4.8
   http: ^1.6.0
   wakelock_plus: ^1.2.8
   page_flip: ^0.2.5+1
