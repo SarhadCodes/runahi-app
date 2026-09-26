@@ -1,0 +1,90 @@
+name: iOS IPA Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag for IPA upload"
+        required: false
+        default: "v1.0.2"
+
+jobs:
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter doctor
+        run: |
+          flutter --version
+          flutter doctor -v
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Precache iOS artifacts
+        run: flutter precache --ios
+
+      - name: Install CocoaPods deps
+        working-directory: ios
+        run: |
+          pod install --repo-update
+
+      - name: Build iOS (unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package IPA
+        run: |
+          set -euo pipefail
+          APP_PATH=""
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            APP_PATH="build/ios/iphoneos/Runner.app"
+          elif [ -d "build/ios/Release-iphoneos/Runner.app" ]; then
+            APP_PATH="build/ios/Release-iphoneos/Runner.app"
+          else
+            echo "Runner.app not found. Listing build/ios:"
+            find build/ios -maxdepth 3 -type d -name "*.app" -print || true
+            exit 1
+          fi
+          echo "Packaging: $APP_PATH"
+          STAGE="$(mktemp -d)"
+          mkdir -p "$STAGE/Payload"
+          cp -R "$APP_PATH" "$STAGE/Payload/"
+          (
+            cd "$STAGE"
+            zip -qry "$GITHUB_WORKSPACE/Rounahi.ipa" Payload
+          )
+          ls -lh Rounahi.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rounahi-iOS-IPA
+          path: Rounahi.ipa
+          if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: رووناهى ${{ github.event.inputs.release_tag }}
+          body: |
+            Unsigned iOS IPA for رووناهى (`com.rounahi.rounahi`).
+            Built with GitHub Actions (`flutter build ios --release --no-codesign`).
+            Install only via sideload tools that accept unsigned/ad-hoc packages.
+          files: Rounahi.ipa
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

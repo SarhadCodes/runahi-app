@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layoutDirection="rtl">
+
+    <TextView
+        android:id="@+id/widget_brand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="رووناهى"
+        android:textAlignment="center"
+        android:textColor="@color/rounahi_gold"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_arabic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textAlignment="center"
+        android:textColor="@color/rounahi_white"
+        android:textSize="13sp" />
+</LinearLayout>

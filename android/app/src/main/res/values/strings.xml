@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">رووناهى</string>
+    <string name="widget_ayah_desc">ئایەتی ئەمڕۆ</string>
+    <string name="widget_word_desc">وشەی ڕۆژ</string>
+    <string name="widget_topic_desc">بابەتی ڕۆژ</string>
+    <string name="widget_latest_desc">نوێترین ناوەڕۆک</string>
+    <string name="widget_compact_desc">رووناهى</string>
+</resources>

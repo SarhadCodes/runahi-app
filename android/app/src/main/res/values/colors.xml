@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="rounahi_navy">#0B2A4A</color>
+    <color name="rounahi_deep_navy">#071C33</color>
+    <color name="rounahi_gold">#C9A85D</color>
+    <color name="rounahi_white">#FFFFFF</color>
+    <color name="rounahi_ivory">#FBF8F1</color>
+    <color name="rounahi_soft">#F5F8FC</color>
+    <color name="rounahi_text">#F7F4EC</color>
+	<color name="ic_launcher_background">#0B2A4A</color>
+</resources>
