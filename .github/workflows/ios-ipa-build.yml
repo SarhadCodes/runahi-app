@@ -37,15 +37,26 @@ jobs:
       - name: Precache iOS artifacts
         run: flutter precache --ios
 
-      - name: Install CocoaPods deps
-        working-directory: ios
+      - name: Show iOS deployment settings
         run: |
-          # Ensure Flutter-generated config exists before CocoaPods resolves the Flutter pod.
-          flutter pub get
-          pod install --repo-update
+          echo "=== Podfile platform ==="
+          grep -n "platform :ios" ios/Podfile || true
+          echo "=== Flutter.podspec (if present) ==="
+          if [ -f ios/Flutter/Flutter.podspec ]; then
+            grep -n "deployment_target\|platform" ios/Flutter/Flutter.podspec || true
+            cat ios/Flutter/Flutter.podspec
+          else
+            echo "Flutter.podspec not generated yet (ok before build)"
+          fi
+          echo "=== Generated.xcconfig ==="
+          cat ios/Flutter/Generated.xcconfig || true
 
       - name: Build iOS (unsigned)
-        run: flutter build ios --release --no-codesign --no-tree-shake-icons
+        # Let Flutter run pod install itself from the repo root (more reliable than a bare pod install).
+        run: |
+          set -euo pipefail
+          rm -rf ios/Pods ios/Podfile.lock ios/.symlinks
+          flutter build ios --release --no-codesign --no-tree-shake-icons
 
       - name: Package IPA
         run: |
@@ -57,7 +68,7 @@ jobs:
             APP_PATH="build/ios/Release-iphoneos/Runner.app"
           else
             echo "Runner.app not found. Listing build/ios:"
-            find build/ios -maxdepth 3 -type d -name "*.app" -print || true
+            find build/ios -maxdepth 4 -type d -name "*.app" -print || true
             exit 1
           fi
           echo "Packaging: $APP_PATH"
