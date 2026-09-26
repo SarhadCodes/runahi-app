@@ -60,20 +60,49 @@ jobs:
       - name: Build iOS (unsigned)
         run: |
           set -euo pipefail
-          rm -rf ios/Pods ios/Podfile.lock ios/.symlinks
-          flutter build ios --release --no-codesign --no-tree-shake-icons
+          rm -rf ios/Pods ios/Podfile.lock ios/.symlinks build/ios_derived
+
+          # Config only — avoids Flutter's Development Team preflight that still
+          # rejects --no-codesign on current stable when no Apple team is set.
+          flutter build ios --config-only --release --no-codesign --no-tree-shake-icons
+
+          cd ios
+          pod install --repo-update
+          cd ..
+
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/ios_derived \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= \
+            PROVISIONING_PROFILE_SPECIFIER= \
+            build
+
+          APP_SRC="build/ios_derived/Build/Products/Release-iphoneos/Runner.app"
+          if [ ! -d "$APP_SRC" ]; then
+            echo "Runner.app missing at $APP_SRC"
+            find build/ios_derived -type d -name "*.app" -print || true
+            exit 1
+          fi
+          mkdir -p build/ios/iphoneos
+          rm -rf build/ios/iphoneos/Runner.app
+          cp -R "$APP_SRC" build/ios/iphoneos/Runner.app
+          echo "Unsigned Runner.app ready at build/ios/iphoneos/Runner.app"
 
       - name: Package IPA
         run: |
           set -euo pipefail
-          APP_PATH=""
-          if [ -d "build/ios/iphoneos/Runner.app" ]; then
-            APP_PATH="build/ios/iphoneos/Runner.app"
-          elif [ -d "build/ios/Release-iphoneos/Runner.app" ]; then
-            APP_PATH="build/ios/Release-iphoneos/Runner.app"
-          else
+          APP_PATH="build/ios/iphoneos/Runner.app"
+          if [ ! -d "$APP_PATH" ]; then
             echo "Runner.app not found. Listing build/ios:"
-            find build/ios -maxdepth 4 -type d -name "*.app" -print || true
+            find build/ios -maxdepth 5 -type d -name "*.app" -print || true
             exit 1
           fi
           echo "Packaging رووناهى IPA from: $APP_PATH"
@@ -104,7 +133,7 @@ jobs:
             - Bundle ID: `com.rounahi.rounahi`
             - Version: `1.0.0+2`
             - File: `Rounahi-iOS-1.0.0+2-unsigned.ipa`
-            - Built with: `flutter build ios --release --no-codesign`
+            - Built with: `xcodebuild` unsigned (`CODE_SIGNING_ALLOWED=NO`) after `flutter build ios --config-only --no-codesign`
 
             Install only via sideload tools that accept unsigned packages.
           files: ${{ env.IPA_NAME }}
