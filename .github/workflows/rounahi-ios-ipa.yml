@@ -1,4 +1,4 @@
-name: "رووناهى — iOS IPA ✓ ready"
+name: "رووناهى — iOS IPA ✓ theme"
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-rounahi-ios:
-    name: "Build رووناهى iOS IPA ✓"
+    name: "Build رووناهى iOS IPA ✓ theme"
     runs-on: macos-latest
     timeout-minutes: 90
     permissions:
