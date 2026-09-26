@@ -1,20 +1,25 @@
-name: iOS IPA Build
+name: "رووناهى — iOS IPA (unsigned)"
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag for IPA upload"
+        description: "GitHub release tag (e.g. rounahi-ios-v1.0.0)"
         required: false
-        default: "v1.0.2"
+        default: "rounahi-ios-v1.0.0"
 
 jobs:
-  build-ios:
-    name: Build iOS IPA
+  build-rounahi-ios:
+    name: "Build رووناهى iOS IPA"
     runs-on: macos-latest
     timeout-minutes: 90
     permissions:
       contents: write
+
+    env:
+      APP_LABEL: Rounahi
+      IPA_NAME: Rounahi-iOS-1.0.0+2-unsigned.ipa
+      ARTIFACT_NAME: Rounahi-iOS-1.0.0+2-unsigned
 
     steps:
       - name: Checkout
@@ -39,6 +44,7 @@ jobs:
 
       - name: Show iOS deployment settings
         run: |
+          echo "=== Building: رووناهى (com.rounahi.rounahi) ==="
           echo "=== Podfile platform ==="
           grep -n "platform :ios" ios/Podfile || true
           echo "=== Flutter.podspec (if present) ==="
@@ -52,7 +58,6 @@ jobs:
           cat ios/Flutter/Generated.xcconfig || true
 
       - name: Build iOS (unsigned)
-        # Let Flutter run pod install itself from the repo root (more reliable than a bare pod install).
         run: |
           set -euo pipefail
           rm -rf ios/Pods ios/Podfile.lock ios/.symlinks
@@ -71,33 +76,38 @@ jobs:
             find build/ios -maxdepth 4 -type d -name "*.app" -print || true
             exit 1
           fi
-          echo "Packaging: $APP_PATH"
+          echo "Packaging رووناهى IPA from: $APP_PATH"
           STAGE="$(mktemp -d)"
           mkdir -p "$STAGE/Payload"
           cp -R "$APP_PATH" "$STAGE/Payload/"
           (
             cd "$STAGE"
-            zip -qry "$GITHUB_WORKSPACE/Rounahi.ipa" Payload
+            zip -qry "$GITHUB_WORKSPACE/${IPA_NAME}" Payload
           )
-          ls -lh Rounahi.ipa
+          ls -lh "${IPA_NAME}"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Rounahi-iOS-IPA
-          path: Rounahi.ipa
+          name: ${{ env.ARTIFACT_NAME }}-run${{ github.run_number }}
+          path: ${{ env.IPA_NAME }}
           if-no-files-found: error
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.release_tag }}
-          name: رووناهى ${{ github.event.inputs.release_tag }}
+          name: "رووناهى iOS ${{ github.event.inputs.release_tag }} (unsigned)"
           body: |
-            Unsigned iOS IPA for رووناهى (`com.rounahi.rounahi`).
-            Built with GitHub Actions (`flutter build ios --release --no-codesign`).
-            Install only via sideload tools that accept unsigned/ad-hoc packages.
-          files: Rounahi.ipa
+            ## رووناهى — iOS IPA (unsigned)
+            - App: **رووناهى**
+            - Bundle ID: `com.rounahi.rounahi`
+            - Version: `1.0.0+2`
+            - File: `Rounahi-iOS-1.0.0+2-unsigned.ipa`
+            - Built with: `flutter build ios --release --no-codesign`
+
+            Install only via sideload tools that accept unsigned packages.
+          files: ${{ env.IPA_NAME }}
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
