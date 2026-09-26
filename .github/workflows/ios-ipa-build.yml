@@ -40,10 +40,12 @@ jobs:
       - name: Install CocoaPods deps
         working-directory: ios
         run: |
+          # Ensure Flutter-generated config exists before CocoaPods resolves the Flutter pod.
+          flutter pub get
           pod install --repo-update
 
       - name: Build iOS (unsigned)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --no-tree-shake-icons
 
       - name: Package IPA
         run: |
